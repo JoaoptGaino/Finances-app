@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { PasswordService } from 'src/auth/services/password.service';
+import { PrismaService } from 'src/prisma.service';
+import { AppUsersController } from './app-users.controller';
+import { AppUsersService } from './app-users.service';
+
+@Module({
+  controllers: [AppUsersController],
+  providers: [AppUsersService, PasswordService, PrismaService],
+  exports: [AppUsersService],
+})
+export class AppUsersModule {}

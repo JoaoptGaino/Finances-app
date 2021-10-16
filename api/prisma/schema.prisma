@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model AppUsers {
+  id       String @id @default(uuid())
+  email    String @unique
+  username String @unique
+  fullName String @map("full_name")
+  password String
+
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  Operations Operations[]
+
+  @@map("app_users")
+}
+
+model Categories {
+  id   String @id @default(uuid())
+  name String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  Operations Operations[]
+  @@map("categories")
+}
+
+model Operations {
+  id            String        @id @default(uuid())
+  description   String
+  amount        Decimal
+  operationType OperationType @map("operation_type")
+  date          DateTime      @default(now())
+  categoryId    String        @map("category_id")
+  appUserId     String        @map("app_user_id")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  Categories Categories @relation(fields: [categoryId], references: [id])
+  AppUsers   AppUsers   @relation(fields: [appUserId], references: [id])
+  @@map("operations")
+}
+
+enum OperationType {
+  INCOME
+  EXPENSES
+}
