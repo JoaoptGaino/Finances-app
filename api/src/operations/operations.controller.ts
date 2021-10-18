@@ -1,28 +1,33 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
-import { OperationsService } from './operations.service';
-import { CreateOperationDto } from './dto/create-operation.dto';
-import { UpdateOperationDto } from './dto/update-operation.dto';
 import { Prisma } from '.prisma/client';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
+import { AppUser } from 'src/decorators/app-user.decorator';
+import { CreateOperationDto } from './dto/create-operation.dto';
+import { OperationSnippetDto } from './dto/operation-snippet-dto';
+import { UpdateOperationDto } from './dto/update-operation.dto';
+import { OperationsService } from './operations.service';
 
 @Controller('operations')
 export class OperationsController {
   constructor(private readonly operationsService: OperationsService) {}
 
   @Post()
-  create(@Body() createOperationDto: CreateOperationDto) {
-    return this.operationsService.create(createOperationDto);
+  create(@Body() createOperationDto: CreateOperationDto, @AppUser() app_user) {
+    return this.operationsService.create(createOperationDto, app_user.id);
   }
 
   @Get()
+  @UseInterceptors(ClassSerializerInterceptor)
   async findAll(
     @Query('skip') skip?: string,
     @Query('limit') limit?: string,
@@ -34,8 +39,7 @@ export class OperationsController {
     @Query('operationType') operationType?: string,
     @Query('date') date?: string,
     @Query('categoryId') categoryId?: string,
-    @Query('appUserId') appUserId?: string,
-    //@Query('') obj?: string,
+    @Query('username') username?: string,
   ) {
     const where = {
       description: { contains: description, mode: 'insensitive' },
@@ -43,10 +47,10 @@ export class OperationsController {
       operationType: operationType && operationType,
       date: date && date,
       categoryId,
-      appUserId,
+      AppUsers: {
+        username: { contains: username, mode: 'insensitive' },
+      },
     } as Prisma.OperationsWhereInput;
-    // const objDesirialized = JSON.parse(JSON.stringify(obj));
-    // console.log(objDesirialized);
     const total = await this.operationsService.count({ where });
     const entity = await this.operationsService.findAll({
       take: limit || take ? Number(limit ?? take) : undefined,
@@ -62,9 +66,16 @@ export class OperationsController {
     };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.operationsService.findOne(id);
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.operationsService.findOne(id);
+  // }
+
+  @Get(':user')
+  findOperationFromUser(@Param('user') user: string) {
+    return this.operationsService.findAll({
+      where: { AppUsers: { username: user } },
+    });
   }
 
   @Patch(':id')

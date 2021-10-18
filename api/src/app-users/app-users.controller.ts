@@ -9,13 +9,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { Public } from 'src/decorators';
+import { Public } from 'src/decorators/public.decorator';
+import { OperationsService } from 'src/operations/operations.service';
 import { AppUsersService } from './app-users.service';
 import { AppUserResponse, CreateAppUserDto, UpdateAppUserDto } from './dto';
 
 @Controller('app-users')
 export class AppUsersController {
-  constructor(private readonly appUsersService: AppUsersService) {}
+  constructor(
+    private readonly appUsersService: AppUsersService,
+    private readonly operationsService: OperationsService,
+  ) {}
 
   @Public()
   @Post()

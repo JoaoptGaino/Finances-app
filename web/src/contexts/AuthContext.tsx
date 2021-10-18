@@ -1,8 +1,8 @@
 import { createContext, useEffect, useState } from "react";
 import { setCookie, parseCookies } from "nookies";
-import Router from "next/router";
+import { useRouter } from "next/router";
 
-import { api } from "../../services/api";
+import { api } from "../services/api";
 
 type SignInData = {
   email: string;
@@ -32,11 +32,14 @@ export const AuthContext = createContext({} as AuthContextType);
 export function AuthProvider({ children }: any) {
   const [user, setUser] = useState<User | null>(null);
   const isAuthenticated = !!user;
+  const router = useRouter();
 
   useEffect(() => {
     const { finances_token: token } = parseCookies();
 
-    if (token) {
+    if (!token) {
+      router.push("/");
+    } else {
       verifyJwt(token);
     }
   }, []);
@@ -60,7 +63,7 @@ export function AuthProvider({ children }: any) {
     api.defaults.headers!.authorization = `Bearer ${token}`;
     setUser(user);
 
-    Router.push("/dashboard");
+    router.push("/dashboard");
   }
 
   return (

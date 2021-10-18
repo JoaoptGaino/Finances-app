@@ -1,5 +1,6 @@
 import { OperationType } from '.prisma/client';
 import { Decimal } from '@prisma/client/runtime';
+import { classToPlain, Exclude } from 'class-transformer';
 import {
   IsDateString,
   IsIn,
@@ -31,7 +32,16 @@ export class CreateOperationDto {
   @IsUUID('4')
   categoryId: string;
 
-  @IsNotEmpty()
-  @IsUUID('4')
-  appUserId: string;
+  // @Exclude()
+  // @IsNotEmpty()
+  // @IsUUID('4')
+  // appUserId: string;
+
+  toJSON() {
+    return classToPlain(this);
+  }
+
+  toString() {
+    return JSON.stringify(this.toJSON());
+  }
 }

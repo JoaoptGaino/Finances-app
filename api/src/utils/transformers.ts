@@ -24,3 +24,7 @@ export function transformerUnique<T extends Record<string, unknown>>(
 
   return object;
 }
+
+export function transformToDto<T extends typeGeneric>(entities: T, dto) {
+  return entities.map((entity) => new dto(entity));
+}

@@ -5,16 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
+import { transformToDto } from 'src/utils/transformers';
 import { CreateOperationDto } from './dto/create-operation.dto';
+import { OperationSnippetDto } from './dto/operation-snippet-dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
 
 @Injectable()
 export class OperationsService {
   constructor(private readonly prisma: PrismaService) {}
-  async create(createOperationDto: CreateOperationDto) {
+  async create(createOperationDto: CreateOperationDto, app_user_id: string) {
     try {
       const entity = await this.prisma.operations.create({
-        data: createOperationDto,
+        data: {
+          ...createOperationDto,
+          appUserId: app_user_id,
+        },
       });
       return entity;
     } catch (err) {
@@ -36,8 +41,11 @@ export class OperationsService {
       cursor,
       where,
       orderBy,
+      include: {
+        AppUsers: true,
+      },
     });
-    return entities;
+    return transformToDto(entities, OperationSnippetDto);
   }
 
   count = this.prisma.operations.count;

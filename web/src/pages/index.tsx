@@ -1,28 +1,23 @@
-import type { NextPage } from "next";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import {
   Avatar,
   Button,
+  Box,
   Checkbox,
   Container,
-  createTheme,
-  CssBaseline,
   FormControlLabel,
   Grid,
   Link,
-  TextField,
-  ThemeProvider,
   Typography,
 } from "@mui/material";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import { Box } from "@mui/system";
 import { Form, Formik } from "formik";
-import React, { useContext } from "react";
+import type { NextPage } from "next";
 import Head from "next/head";
+import { useContext } from "react";
 import * as Yup from "yup";
-import InputField from "../../components/Form/Inputs/InputField";
-import PasswordInput from "../../components/Form/Inputs/PasswordField";
+import InputField from "../components/Form/Inputs/InputField";
+import PasswordInput from "../components/Form/Inputs/PasswordField";
 import { AuthContext } from "../contexts/AuthContext";
-const theme = createTheme();
 
 const schema = Yup.object().shape({
   email: Yup.string().email("E-mail inválido").required("Obrigatório"),
@@ -45,12 +40,11 @@ const Home: NextPage = () => {
     }
   }
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <Head>
         <title>Login</title>
       </Head>
       <Container component="main" maxWidth="xs">
-        <CssBaseline />
         <Box
           sx={{
             marginTop: 8,
@@ -117,7 +111,7 @@ const Home: NextPage = () => {
           </Formik>
         </Box>
       </Container>
-    </ThemeProvider>
+    </>
   );
 };
 
