@@ -70,4 +70,17 @@ export class AppUsersController {
   remove(@Param('id') id: string) {
     return this.appUsersService.remove(id);
   }
+
+  @Get(':username/operations')
+  async operationsFromUser(@Param('username') username: string) {
+    const operations = await this.appUsersService.operationsFromUser(username);
+    const totalCount = await this.appUsersService.countOperationsFromUser(
+      username,
+    );
+
+    return {
+      total: totalCount,
+      data: operations,
+    };
+  }
 }

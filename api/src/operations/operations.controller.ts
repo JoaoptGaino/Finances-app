@@ -56,9 +56,13 @@ export class OperationsController {
         id: cursor,
       },
     });
+    const { entities, totalAmount, totalExpenses, totalIncome } = entity;
     return {
       total,
-      entity,
+      entities,
+      totalAmount,
+      totalExpenses,
+      totalIncome,
     };
   }
 

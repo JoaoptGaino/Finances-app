@@ -1,14 +1,49 @@
-import { CssBaseline, Grid, IconButton, Toolbar, Typography, useTheme } from "@mui/material";
+import {
+  CssBaseline,
+  Grid,
+  IconButton,
+  Toolbar,
+  Typography,
+  useTheme,
+  Box,
+  styled,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  Divider,
+  ListItemText,
+  CircularProgress,
+  TableContainer,
+  TableRow,
+  Paper,
+  TableHead,
+  Table,
+  TableBody,
+  TableCell,
+  Button,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import { GetServerSideProps } from "next";
 import React, { useContext, useEffect, useState } from "react";
 import { parseCookies } from "nookies";
+import {
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Menu as MenuIcon,
+  Inbox as InboxIcon,
+  Mail as MailIcon,
+  AccountCircle,
+} from "@mui/icons-material";
+import Head from "next/head";
+
 import { api } from "../../services/api";
 import { AuthContext } from "../contexts/AuthContext";
 import { getApiClient } from "../../services/axios";
-import { Box, styled } from "@mui/system";
-import { boolean } from "yup/lib/locale";
-
+import TransactionsCard from "../components/TransactionsCard";
+import { formatDate } from "../utils/formatters/formatDate";
 const drawerWidth = 240;
 
 interface AppBarProps extends MuiAppBarProps {
@@ -62,6 +97,23 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 export default function Dashboard() {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [operations, setOperations] = useState<ResponseData>();
+  const [auth, setAuth] = React.useState(true);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { user } = useContext(AuthContext);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAuth(event.target.checked);
+  };
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -71,8 +123,28 @@ export default function Dashboard() {
     setOpen(false);
   };
 
+  const getResponseData = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`app-users/${user?.username}/operations`);
+      setOperations(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log(user);
+    getResponseData();
+  }, []);
+
   return (
     <Box sx={{ display: "flex" }}>
+      <Head>
+        <title>Dashboard</title>
+      </Head>
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar>
@@ -85,9 +157,39 @@ export default function Dashboard() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Persistent drawer
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Finances
           </Typography>
+          <>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenu}
+              color="inherit"
+            >
+              <AccountCircle />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>Profile</MenuItem>
+              <MenuItem onClick={handleClose}>My account</MenuItem>
+            </Menu>
+          </>
         </Toolbar>
       </AppBar>
       <Drawer
@@ -114,58 +216,80 @@ export default function Dashboard() {
         </DrawerHeader>
         <Divider />
         <List>
-          {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
+          <ListItem button>
+            <ListItemIcon>
+              <InboxIcon />
+            </ListItemIcon>
+            <ListItemText primary="Profile" />
+          </ListItem>
+          <ListItem button>
+            <ListItemIcon>
+              <InboxIcon />
+            </ListItemIcon>
+            <ListItemText primary="Operations" />
+          </ListItem>
+          <ListItem button>
+            <ListItemIcon>
+              <InboxIcon />
+            </ListItemIcon>
+            <ListItemText primary="Categories" />
+          </ListItem>
         </List>
         <Divider />
-        <List>
-          {["All mail", "Trash", "Spam"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
-        <Typography paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Rhoncus
-          dolor purus non enim praesent elementum facilisis leo vel. Risus at
-          ultrices mi tempus imperdiet. Semper risus in hendrerit gravida rutrum
-          quisque non tellus. Convallis convallis tellus id interdum velit
-          laoreet id donec ultrices. Odio morbi quis commodo odio aenean sed
-          adipiscing. Amet nisl suscipit adipiscing bibendum est ultricies
-          integer quis. Cursus euismod quis viverra nibh cras. Metus vulputate
-          eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo
-          quis imperdiet massa tincidunt. Cras tincidunt lobortis feugiat
-          vivamus at augue. At augue eget arcu dictum varius duis at consectetur
-          lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa sapien
-          faucibus et molestie ac.
-        </Typography>
-        <Typography paragraph>
-          Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-          ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-          elementum integer enim neque volutpat ac tincidunt. Ornare suspendisse
-          sed nisi lacus sed viverra tellus. Purus sit amet volutpat consequat
-          mauris. Elementum eu facilisis sed odio morbi. Euismod lacinia at quis
-          risus sed vulputate odio. Morbi tincidunt ornare massa eget egestas
-          purus viverra accumsan in. In hendrerit gravida rutrum quisque non
-          tellus orci ac. Pellentesque nec nam aliquam sem et tortor. Habitant
-          morbi tristique senectus et. Adipiscing elit duis tristique
-          sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-          eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-          posuere sollicitudin aliquam ultrices sagittis orci a.
-        </Typography>
+        {!loading ? (
+          <>
+            <Grid container paddingY={2}>
+              <Grid item xs={6} paddingX={2}>
+                <TransactionsCard
+                  amount={operations?.data.totalIncome}
+                  type="INCOME"
+                />
+              </Grid>
+              <Grid item xs={6} paddingX={2}>
+                <TransactionsCard
+                  amount={operations?.data.totalExpenses}
+                  type="EXPENSES"
+                />
+              </Grid>
+            </Grid>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Description</TableCell>
+                    <TableCell align="center">Amount</TableCell>
+                    <TableCell align="center">Operation Type</TableCell>
+                    <TableCell align="center">Date</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {operations?.data.entities.map((operation) => (
+                    <TableRow
+                      key={operation.id}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {operation.description}
+                      </TableCell>
+                      <TableCell align="center">${operation.amount}</TableCell>
+                      <TableCell align="center">
+                        {operation.operationType}
+                      </TableCell>
+                      <TableCell align="center">
+                        {formatDate(operation.date)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        ) : (
+          <CircularProgress />
+        )}
       </Main>
     </Box>
   );

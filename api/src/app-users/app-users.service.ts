@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PasswordService } from 'src/auth/services/password.service';
+import { OperationsService } from 'src/operations/operations.service';
 import { PrismaService } from 'src/prisma.service';
 import { transformerUnique } from 'src/utils/transformers';
 import { FindAppUser } from './context/types';
@@ -15,6 +16,7 @@ export class AppUsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly passwordService: PasswordService,
+    private readonly operationsService: OperationsService,
   ) {}
   async create(createAppUserDto: CreateAppUserDto) {
     const hashedPassword = await this.passwordService.hashPassword(
@@ -95,5 +97,13 @@ export class AppUsersService {
       throw new NotFoundException();
     }
     return entity;
+  }
+  operationsFromUser(username: string) {
+    return this.operationsService.findAll({
+      where: { AppUsers: { username } },
+    });
+  }
+  countOperationsFromUser(username: string) {
+    return this.operationsService.count({ where: { AppUsers: { username } } });
   }
 }

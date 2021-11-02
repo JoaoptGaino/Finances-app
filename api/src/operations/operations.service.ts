@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateOperationDto } from './dto/create-operation.dto';
+import { Operation } from './entities/operation.entity';
 import { UpdateOperationDto } from './dto/update-operation.dto';
 
 @Injectable()
@@ -16,7 +17,7 @@ export class OperationsService {
       const entity = await this.prisma.operations.create({
         data: createOperationDto,
       });
-      return entity;
+      return new Operation(entity);
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -37,7 +38,24 @@ export class OperationsService {
       where,
       orderBy,
     });
-    return entities;
+    const entity = entities.map((entity) => new Operation(entity));
+
+    const totalIncome = entity
+      .filter((item) => item.operationType === 'INCOME')
+      .reduce((sum, current) => sum + Number(current.amount), 0);
+    const totalExpenses = entity
+      .filter((item) => item.operationType === 'EXPENSES')
+      .reduce((sum, current) => sum + Number(current.amount), 0);
+    const totalAmount = entity.reduce(
+      (sum, current) => sum + Number(current.amount),
+      0,
+    );
+    return {
+      entities: entity,
+      totalAmount,
+      totalIncome,
+      totalExpenses,
+    };
   }
 
   count = this.prisma.operations.count;

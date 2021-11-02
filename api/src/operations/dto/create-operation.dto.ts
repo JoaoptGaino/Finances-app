@@ -1,5 +1,6 @@
 import { OperationType } from '.prisma/client';
 import { Decimal } from '@prisma/client/runtime';
+import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsIn,
