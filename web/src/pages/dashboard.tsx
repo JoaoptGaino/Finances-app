@@ -39,9 +39,9 @@ import {
 } from "@mui/icons-material";
 import Head from "next/head";
 
-import { api } from "../../services/api";
+import { api } from "../services/api";
 import { AuthContext } from "../contexts/AuthContext";
-import { getApiClient } from "../../services/axios";
+import { getApiClient } from "../services/axios";
 import TransactionsCard from "../components/TransactionsCard";
 import { formatDate } from "../utils/formatters/formatDate";
 const drawerWidth = 240;

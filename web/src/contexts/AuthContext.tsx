@@ -2,7 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { setCookie, parseCookies } from "nookies";
 import Router from "next/router";
 
-import { api } from "../../services/api";
+import { api } from "../services/api";
 
 type SignInData = {
   email: string;
