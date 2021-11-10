@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateOperationDto } from './dto/create-operation.dto';
-import { Operation } from './entities/operation.entity';
+import { OperationEntity } from './entities/operation.entity';
 import { UpdateOperationDto } from './dto/update-operation.dto';
+import { transformerUnique } from 'src/utils/transformers';
 
 @Injectable()
 export class OperationsService {
@@ -17,7 +18,7 @@ export class OperationsService {
       const entity = await this.prisma.operations.create({
         data: createOperationDto,
       });
-      return new Operation(entity);
+      return transformerUnique(entity);
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -37,24 +38,16 @@ export class OperationsService {
       cursor,
       where,
       orderBy,
+      include: {
+        Categories: true,
+      },
     });
-    const entity = entities.map((entity) => new Operation(entity));
-
-    const totalIncome = entity
-      .filter((item) => item.operationType === 'INCOME')
-      .reduce((sum, current) => sum + Number(current.amount), 0);
-    const totalExpenses = entity
-      .filter((item) => item.operationType === 'EXPENSES')
-      .reduce((sum, current) => sum + Number(current.amount), 0);
-    const totalAmount = entity.reduce(
-      (sum, current) => sum + Number(current.amount),
-      0,
+    const entity = entities.map(
+      ({ Categories, ...entity }) => new OperationEntity(entity, Categories),
     );
+
     return {
       entities: entity,
-      totalAmount,
-      totalIncome,
-      totalExpenses,
     };
   }
 

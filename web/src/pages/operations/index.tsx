@@ -6,14 +6,19 @@ import MuiTable from "materialism/table";
 import Head from "next/head";
 
 import { Edit } from "@mui/icons-material";
-import { Grid } from "@mui/material";
-
+import { Grid, CircularProgress } from "@mui/material";
+import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 import { api } from "../../services/api";
 import operationsColumns from "./columns";
+import { useEffect, useState } from "react";
 
+interface OperationResponse {
+  count: number;
+  data: { [key: string]: any }[];
+}
 export default function Operations() {
   const router = useRouter();
-
+  const [operations, setOperations] = useState<OperationResponse>();
   const filters: Filter[] = [
     {
       field: "description",
@@ -36,11 +41,20 @@ export default function Operations() {
       type: "string",
     },
   ];
-  //FIXME: ELE ESPERA POR DATA, VOCÊ TA ENVIANDO ENTITIES, MANÉ
-  const operationsQuery = useTableQuery({
-    path: "/operations",
-    api,
-  });
+
+  async function getOperations() {
+    try {
+      const response = await api.get("/operations");
+      console.log(response.data);
+      setOperations(response.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    getOperations();
+  }, []);
 
   return (
     <PageWrap>
@@ -49,20 +63,18 @@ export default function Operations() {
       </Head>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Filters filters={filters} listHook={operationsQuery} />
-        </Grid>
-        <Grid item xs={12}>
-          <MuiTable
-            listHook={operationsQuery}
-            columns={operationsColumns}
-            actions={[
-              {
-                title: "Editar",
-                icon: Edit,
-                onClick: (id) => router.push(`${router.pathname}/${id}`),
-              },
-            ]}
-          />
+          {operations ? (
+            <div style={{ height: 400, width: "100%" }}>
+              <DataGrid
+                rows={operations.data}
+                columns={operationsColumns}
+                pageSize={5}
+                rowsPerPageOptions={[5]}
+              />
+            </div>
+          ) : (
+            <CircularProgress />
+          )}
         </Grid>
       </Grid>
       <AddButton data-cy="add-operation" />

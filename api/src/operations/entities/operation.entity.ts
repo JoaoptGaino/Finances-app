@@ -1,25 +1,29 @@
-import { OperationType } from '.prisma/client';
+import { Categories, Operations, OperationType } from '.prisma/client';
 import { Decimal } from '@prisma/client/runtime';
-import { Exclude, Expose, Transform } from 'class-transformer';
+import { Transform } from 'class-transformer';
 
-export class Operation {
+export class OperationEntity {
+  id: string;
   description: string;
-
+  amount: Decimal | number;
   operationType: OperationType;
   date: Date;
   createdAt: Date;
   updatedAt: Date;
 
-  @Transform((obj) => String(obj.value))
-  amount: Decimal | number;
+  @Transform(({ value }) => ({
+    name: value.name,
+  }))
+  Categories: Categories;
 
-  @Exclude()
-  categoryId: string;
-
-  @Exclude()
-  appUserId: string;
-
-  constructor(partial: Partial<Operation>) {
-    Object.assign(this, partial);
+  constructor(operation: Operations, Categories: Categories) {
+    this.id = operation.id;
+    this.description = operation.description;
+    this.amount = operation.amount.toNumber();
+    this.operationType = operation.operationType;
+    this.date = operation.date;
+    this.createdAt = operation.createdAt;
+    this.updatedAt = operation.updatedAt;
+    this.Categories = Categories;
   }
 }

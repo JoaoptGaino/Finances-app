@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { OperationsService } from './operations.service';
 import { CreateOperationDto } from './dto/create-operation.dto';
@@ -22,6 +24,7 @@ export class OperationsController {
     return this.operationsService.create(createOperationDto);
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async findAll(
     @Query('skip') skip?: string,
@@ -56,16 +59,14 @@ export class OperationsController {
         id: cursor,
       },
     });
-    const { entities, totalAmount, totalExpenses, totalIncome } = entity;
+    const { entities } = entity;
     return {
       count: total,
-      entities,
-      totalAmount,
-      totalExpenses,
-      totalIncome,
+      data: entities,
     };
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.operationsService.findOne(id);
